@@ -49,13 +49,17 @@ func (s *BamScanner) OpenBam(bamfile string) error {
 // Fast forward to the next record with read name `read`
 func (s *BamScanner) Find(read string) ([]string, error) {
 	for {
+		// The end of the file may have been reached previously.
 		if s.Closed {
-			// Reached the end of the file.
 			return nil, nil
 		}
 		record, err := s.Record()
 		if err != nil {
 			return nil, err
+		}
+		// Or maybe the file is only now realized to be at the end.
+		if s.Closed {
+			return nil, nil
 		}
 		if record[0] == read {
 			s.Ratchet()
